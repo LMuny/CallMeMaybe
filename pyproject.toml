@@ -1,20 +1,31 @@
 [project]
-name = "root"
+name = "call-me-maybe"
 version = "0.1.0"
-description = "Add your description here"
+description = "Function calling with constrained decoding"
 readme = "README.md"
 authors = [
     { name = "LMuny", email = "ludovic.muny@gmail.com" }
 ]
-requires-python = ">=3.14"
+requires-python = ">=3.10, <3.13"
 dependencies = [
     "numpy",
-    "pydantic"
+    "pydantic",
+    "llm-sdk"
 ]
 
-[project.scripts]
-root = "root:main"
+[tool.uv.sources]
+llm-sdk = { path = "llm_sdk", editable = true }
+torch = [{ index = "pytorch-cpu" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 [build-system]
 requires = ["uv_build>=0.12.3,<0.13.0"]
 build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "src"
+module-root = ""
