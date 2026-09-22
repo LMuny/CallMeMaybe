@@ -7,7 +7,10 @@ authors = [
     { name = "LMuny", email = "ludovic.muny@gmail.com" }
 ]
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "numpy",
+    "pydantic"
+]
 
 [project.scripts]
 root = "root:main"
