@@ -3,21 +3,21 @@
 Function calling with constrained decoding, using Qwen/Qwen3-0.6B via `llm_sdk`.
 
 ## 1. Setup
-- [ ] Create repo with: `src/`, `data/input/`, `README.md`, `pyproject.toml`, `uv.lock`
-- [ ] Copy `llm_sdk/` package into project root (same level as `src/`)
-- [ ] `uv sync` must install `numpy` and `pydantic` (only allowed extra deps)
-- [ ] Forbidden: dspy, pytorch, transformers, huggingface, outlines, or similar
-- [ ] Python ≥ 3.10, flake8-compliant, full type hints, mypy clean, PEP 257 docstrings
-- [ ] Program entry point: `uv run python -m src [--functions_definition <f>] [--input <f>] [--output <f>]`
+- [X] Create repo with: `src/`, `data/input/`, `README.md`, `pyproject.toml`, `uv.lock`
+- [X] Copy `llm_sdk/` package into project root (same level as `src/`)
+- [X] `uv sync` must install `numpy` and `pydantic` (only allowed extra deps)
+- [X] Forbidden: dspy, pytorch, transformers, huggingface, outlines, or similar
+- [X] Python ≥ 3.10, flake8-compliant, full type hints, mypy clean, PEP 257 docstrings
+- [-] Program entry point: `uv run python -m src [--functions_definition <f>] [--input <f>] [--output <f>]`
   - Defaults: read from `data/input/`, write to `data/output/`
 
 ## 2. Makefile (mandatory targets)
-- [ ] `install` — install deps (uv/pip/pipx)
-- [ ] `run` — run main script
-- [ ] `debug` — run with pdb
-- [ ] `clean` — remove `__pycache__`, `.mypy_cache`, etc.
-- [ ] `lint` — `flake8 .` + `mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs`
-- [ ] `lint-strict` (optional) — `flake8 .` + `mypy . --strict`
+- [X] `install` — install deps (uv/pip/pipx)
+- [X] `run` — run main script
+- [X] `debug` — run with pdb
+- [-] `clean` — remove `__pycache__`, `.mypy_cache`, etc.
+- [-] `lint` — `flake8 .` + `mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs`
+- [X] `lint-strict` (optional) — `flake8 .` + `mypy . --strict`
 
 ## 3. Input handling
 - [ ] Parse `data/input/function_calling_tests.json` — array of `{"prompt": "..."}`
