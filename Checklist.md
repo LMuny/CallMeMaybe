@@ -15,8 +15,8 @@ Function calling with constrained decoding, using Qwen/Qwen3-0.6B via `llm_sdk`.
 - [X] `install` — install deps (uv/pip/pipx)
 - [X] `run` — run main script
 - [X] `debug` — run with pdb
-- [-] `clean` — remove `__pycache__`, `.mypy_cache`, etc.
-- [-] `lint` — `flake8 .` + `mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs`
+- [X] `clean` — remove `__pycache__`, `.mypy_cache`, etc.
+- [X] `lint` — `flake8 .` + `mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs`
 - [X] `lint-strict` (optional) — `flake8 .` + `mypy . --strict`
 
 ## 3. Input handling

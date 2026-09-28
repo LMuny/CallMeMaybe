@@ -11,5 +11,7 @@ debug :
 	python -m pdb src/__main__.py
 
 clean :
+	rm -r src/__pychache__ .mypy_cache
 
 lint :
+	mypy -m src
