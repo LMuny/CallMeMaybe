@@ -7,11 +7,11 @@ RED_B = "\033[1;38;5;124m"
 RESET = "\033[38;5;7m"
 
 
-class Function_checks(BaseModel):
+class FunctionChecks(BaseModel):
     prompt: str
 
 
-class Definition_checks(BaseModel):
+class DefinitionChecks(BaseModel):
     name: str
     description: str
     parameters: dict
@@ -37,7 +37,7 @@ class Definition_checks(BaseModel):
         return self
 
 
-class JSON_checks(BaseModel):
+class JsonChecks(BaseModel):
     input: str
     functions_definition: str
     output: str
@@ -45,10 +45,10 @@ class JSON_checks(BaseModel):
     @model_validator(mode="after")
     def check_input_json(self) -> Self:
         try:
-            with open(self.functions_definition, "r"):
+            with open(self.input, "r"):
                 pass
         except Exception as e:
-            raise ValueError(f"{RED_B}Can't read {self.functions_definition}."
+            raise ValueError(f"{RED_B}Can't read {self.input}."
                              f"{RESET}\nMake sure you named it correctly"
                              f" and granted the neccessary permission ({e})")
 
@@ -65,11 +65,11 @@ class JSON_checks(BaseModel):
                                  f"{RESET}\n The file can't be"
                                  f"converted to a JSON ({e})")
 
-        with open(self.functions_definition, "r") as f:
+        with open(self.input, "r") as f:
             input_dict: list = json.load(f)
             try:
                 for i in range(len(input_dict)):
-                    Function_checks(**input_dict[i])
+                    FunctionChecks(**input_dict[i])
             except Exception:
                 raise ValueError(f"{RED_B} Format is not respected in "
                                  f"{self.input}{RESET}\n Must be: key = prompt"
@@ -104,7 +104,7 @@ class JSON_checks(BaseModel):
             input_dict: list = json.load(f)
             try:
                 for i in range(len(input_dict)):
-                    Function_checks(**input_dict[i])
+                    DefinitionChecks(**input_dict[i])
             except Exception:
                 raise ValueError(f"{RED_B} Format is not respected in "
                                  f"{self.functions_definition}{RESET}\n Must "
@@ -126,6 +126,35 @@ class JSON_checks(BaseModel):
             except FileExistsError:
                 pass
         if self.output.endswith(".json") is False:
-            raise ValueError(f"{RED_B}{self.functions_definition}."
-                             f"{RESET}\nThe file isnt a .json")
+            os.makedirs(os.path.dirname(self.output), exist_ok=True)
         return self
+
+
+class FunctionParser():
+    def __init__(self, checks: JsonChecks) -> None:
+        self.checks = checks
+
+    def parse(self) -> str:
+        with open(self.checks.functions_definition, "r") as f:
+            functions = json.load(f)
+
+        lines = []
+        for func in functions:
+            params = ""
+            for name, p in func["parameters"].items():
+                if params != "":
+                    params += ", "
+                params += name + ": " + p["type"]
+            lines.append(func["name"] + "(" + params + ") - " + func[
+                "description"])
+
+        return "\n".join(lines)
+
+
+if __name__ == "__main__":
+    checks = JsonChecks(
+        input="data/input/function_calling_tests.json",
+        functions_definition="data/input/functions_definition.json",
+        output="data/output/result.json",
+    )
+    print(FunctionParser(checks).parse())
