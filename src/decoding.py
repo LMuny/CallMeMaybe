@@ -28,7 +28,7 @@ class Decoding(BaseModel):
 
                 allowed = False
                 for n in names:
-                    if n.startwith(candidate):
+                    if n.startswith(candidate):
                         allowed = True
                         break
                 if not allowed:
