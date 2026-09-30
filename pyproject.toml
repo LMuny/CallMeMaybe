@@ -10,7 +10,8 @@ requires-python = ">=3.10, <3.13"
 dependencies = [
     "numpy",
     "pydantic",
-    "llm-sdk"
+    "llm-sdk",
+    "accelerate"
 ]
 
 [tool.uv.sources]
