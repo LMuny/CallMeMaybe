@@ -1,4 +1,5 @@
 import json
+import os
 from pydantic import BaseModel, model_validator
 from typing_extensions import Self
 
@@ -112,4 +113,19 @@ class JSON_checks(BaseModel):
                                  "parameters : {a: {type: number | str}, "
                                  "b : {type: number | str}},"
                                  "\nreturns: {type: numer | str}}")
+        return self
+
+    @model_validator(mode="after")
+    def check_output_json(self) -> Self:
+        try:
+            with open(self.functions_definition, "r"):
+                pass
+        except FileNotFoundError:
+            try:
+                os.mkdir(os.path.join("data/", "output"))
+            except FileExistsError:
+                pass
+        if self.output.endswith(".json") is False:
+            raise ValueError(f"{RED_B}{self.functions_definition}."
+                             f"{RESET}\nThe file isnt a .json")
         return self
