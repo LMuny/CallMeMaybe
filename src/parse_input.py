@@ -151,6 +151,7 @@ class FunctionParser():
 
 
 if __name__ == "__main__":
+
     checks = JsonChecks(
         input="data/input/function_calling_tests.json",
         functions_definition="data/input/functions_definition.json",
