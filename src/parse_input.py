@@ -145,9 +145,8 @@ class FunctionParser():
                 if params != "":
                     params += ", "
                 params += name + ": " + p["type"]
-            lines.append(func["name"] + "(" + params + ") - " + func[
-                "description"])
-
+            lines.append(func["name"] + "(" + params + ")")
+            lines.append("    " + func["description"])
         return "\n".join(lines)
 
 
