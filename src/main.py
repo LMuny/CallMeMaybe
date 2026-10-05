@@ -3,7 +3,7 @@ import os
 from llm_sdk import Small_LLM_Model
 from src.decoding import Decoding
 
-OUTPUT = "data/output/function_calls.json"
+OUTPUT = "data/output/function_calling_results.json"
 
 with open("data/input/functions_definition.json", "r") as f:
     functions = json.load(f)
