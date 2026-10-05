@@ -20,13 +20,13 @@ Function calling with constrained decoding, using Qwen/Qwen3-0.6B via `llm_sdk`.
 - [X] `lint-strict` (optional) — `flake8 .` + `mypy . --strict`
 
 ## 3. Input handling
-- [ ] Parse `data/input/function_calling_tests.json` — array of `{"prompt": "..."}`
-- [ ] Parse `data/input/functions_definition.json` — function name, args (name+type), return type, description
-- [ ] Handle missing files / invalid JSON gracefully (no crash, clear error message)
-- [ ] Don't hardcode against example files — schema/prompts may change at review time
+- [X] Parse `data/input/function_calling_tests.json` — array of `{"prompt": "..."}`
+- [X] Parse `data/input/functions_definition.json` — function name, args (name+type), return type, description
+- [X] Handle missing files / invalid JSON gracefully (no crash, clear error message)
+- [X] Don't hardcode against example files — schema/prompts may change at review time
 
 ## 4. Core logic — constrained decoding (the actual point of the project)
-- [ ] Use `Small_LLM_Model` from `llm_sdk` — only its **public** methods:
+- [X] Use `Small_LLM_Model` from `llm_sdk` — only its **public** methods:
   - `get_logits_from_input_ids(input_ids) -> logits`
   - `get_path_to_vocab_file() -> str`
   - `encode(text) -> Tensor`

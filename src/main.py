@@ -8,23 +8,30 @@ with open("data/input/functions_definition.json", "r") as f:
 with open("data/input/function_calling_tests.json", "r") as f:
     tests = json.load(f)
 
-names = []
-for func in functions:
-    names.append(func["name"])
+names = [func["name"] for func in functions]
+params_by_name = {func["name"]: func["parameters"] for func in functions}
 
-# 2. model + vocab
+# 2. model + vocab (loaded once)
 model = Small_LLM_Model()
-with open(model.get_path_to_vocab_file(), "r") as f:  # check the real name in the SDK
+with open(model.get_path_to_vocab_file(), "r") as f:
     vocab_dict = json.load(f)
 
-# 3. build the prompt (function list + user request)
-prompt = "Available functions:\n"
+# 3. base prompt (function list), built once
+base_prompt = "Available functions:\n"
 for func in functions:
-    prompt += func["name"] + ": " + func["description"] + "\n"
-prompt += "\nRequest: " + tests[0]["prompt"] + "\n"
+    base_prompt += func["name"] + ": " + func["description"] + "\n"
 
-ids = model.encode(prompt)[0].tolist()
-
-# 4. run the decoding and print the result as text
-result_ids = Decoding.constrained_decoding(ids, vocab_dict, names)
-print(model.decode(result_ids))
+# 4. one decoding per question
+results = []
+for test in tests:
+    prompt = base_prompt + "\nRequest: " + test["prompt"] + "\n"
+    ids = model.encode(prompt)[0].tolist()
+    result_ids = Decoding.constrained_decoding(
+        model, ids, vocab_dict, names, params_by_name
+    )
+    text = model.decode(result_ids[len(ids):])
+    print(text)
+    try:
+        results.append(json.loads(text))
+    except json.JSONDecodeError:
+        print("Invalid JSON for:", test["prompt"])
