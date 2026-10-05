@@ -49,7 +49,12 @@ class Decoding(BaseModel):
                 id_to_token: dict,
                 options: list) -> str:
         generated = ""
-        while generated not in options:
+        while True:
+            if generated in options and not any(
+                    o != generated and o.startswith(generated)
+                    for o in options):
+                return generated
+
             logits = model.get_logits_from_input_ids(ids)
             allowed_ids = set()
             for tok, tok_id in vocab_dict.items():
@@ -62,7 +67,6 @@ class Decoding(BaseModel):
             token = logits.index(max(logits))
             ids.append(token)
             generated += id_to_token[token].replace("Ġ", " ")
-        return generated
 
     @staticmethod
     def constrained_decoding(
