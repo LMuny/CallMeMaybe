@@ -5,21 +5,21 @@ from src.decoding import Decoding
 
 OUTPUT = "data/output/function_calls.json"
 
-# 1. load functions and tests
 with open("data/input/functions_definition.json", "r") as f:
     functions = json.load(f)
 with open("data/input/function_calling_tests.json", "r") as f:
     tests = json.load(f)
 
-names = [func["name"] for func in functions]
-params_by_name = {func["name"]: func["parameters"] for func in functions}
+names = []
+params_by_name = {}
+for func in functions:
+    names.append(func["name"])
+    params_by_name[func["name"]] = func["parameters"]
 
-# 2. model + vocab (loaded once)
 model = Small_LLM_Model()
 with open(model.get_path_to_vocab_file(), "r") as f:
     vocab_dict = json.load(f)
 
-# 3. base prompt (built once)
 base_prompt = (
     "You convert a request into a function call as JSON.\n"
     "Rules:\n"
@@ -36,7 +36,6 @@ base_prompt = (
     '{"text": "a-b-c", "old": "-", "new": "PLUS"}}\n'
 )
 
-# 4. one decoding per question
 results = []
 for test in tests:
     prompt = base_prompt + "\nRequest: " + test["prompt"] + "\n"
@@ -54,7 +53,6 @@ for test in tests:
         print("Invalid JSON for:", test["prompt"])
     results.append(entry)
 
-# 5. write output
 os.makedirs(os.path.dirname(OUTPUT), exist_ok=True)
 with open(OUTPUT, "w") as f:
     json.dump(results, f, indent=2)
