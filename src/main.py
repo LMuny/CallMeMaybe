@@ -1,6 +1,9 @@
 import json
+import os
 from llm_sdk import Small_LLM_Model
 from src.decoding import Decoding
+
+OUTPUT = "data/output/function_calls.json"
 
 # 1. load functions and tests
 with open("data/input/functions_definition.json", "r") as f:
@@ -16,10 +19,22 @@ model = Small_LLM_Model()
 with open(model.get_path_to_vocab_file(), "r") as f:
     vocab_dict = json.load(f)
 
-# 3. base prompt (function list), built once
-base_prompt = "Available functions:\n"
-for func in functions:
-    base_prompt += func["name"] + ": " + func["description"] + "\n"
+# 3. base prompt (built once)
+base_prompt = (
+    "You convert a request into a function call as JSON.\n"
+    "Rules:\n"
+    "- Copy every string value exactly from the request "
+    "(same words, same case).\n"
+    "- Never invent a shorter or symbolic value: one asterisk "
+    "means \"*\", not \"**\".\n"
+    "- Use the parameter descriptions to know which part of the "
+    "request goes where.\n\n"
+    "Functions:\n" + json.dumps(functions, indent=2) + "\n\n"
+    "Example:\n"
+    "Request: Replace all dashes in 'a-b-c' with PLUS\n"
+    '{"name": "fn_example", "parameters": '
+    '{"text": "a-b-c", "old": "-", "new": "PLUS"}}\n'
+)
 
 # 4. one decoding per question
 results = []
@@ -30,8 +45,16 @@ for test in tests:
         model, ids, vocab_dict, names, params_by_name
     )
     text = model.decode(result_ids[len(ids):])
-    print(text)
+    entry = {"prompt": test["prompt"], "name": "", "parameters": {}}
     try:
-        results.append(json.loads(text))
-    except json.JSONDecodeError:
+        data = json.loads(text)
+        entry["name"] = data["name"]
+        entry["parameters"] = data["parameters"]
+    except (json.JSONDecodeError, KeyError):
         print("Invalid JSON for:", test["prompt"])
+    results.append(entry)
+
+# 5. write output
+os.makedirs(os.path.dirname(OUTPUT), exist_ok=True)
+with open(OUTPUT, "w") as f:
+    json.dump(results, f, indent=2)

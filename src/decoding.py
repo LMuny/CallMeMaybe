@@ -6,6 +6,18 @@ import json
 class Decoding(BaseModel):
 
     @staticmethod
+    def _find_end(raw: str) -> int:
+        i = 0
+        while i < len(raw):
+            if raw[i] == "\\":
+                i += 2
+                continue
+            if raw[i] == '"':
+                return i
+            i += 1
+        return -1
+
+    @staticmethod
     def _get_number_pieces(vocab_dict: dict) -> tuple:
         digit_ids = set()
         for tok, tok_id in vocab_dict.items():
@@ -31,6 +43,28 @@ class Decoding(BaseModel):
         return digits_ids | {dot_id}
 
     @staticmethod
+    def _choose(model: Small_LLM_Model,
+                ids: list,
+                vocab_dict: dict,
+                id_to_token: dict,
+                options: list) -> str:
+        generated = ""
+        while generated not in options:
+            logits = model.get_logits_from_input_ids(ids)
+            allowed_ids = set()
+            for tok, tok_id in vocab_dict.items():
+                candidate = generated + tok.replace("Ġ", " ")
+                if any(o.startswith(candidate) for o in options):
+                    allowed_ids.add(tok_id)
+            for i in range(len(logits)):
+                if i not in allowed_ids:
+                    logits[i] = float("-inf")
+            token = logits.index(max(logits))
+            ids.append(token)
+            generated += id_to_token[token].replace("Ġ", " ")
+        return generated
+
+    @staticmethod
     def constrained_decoding(
         model: Small_LLM_Model,
         ids: list,
@@ -48,23 +82,9 @@ class Decoding(BaseModel):
         ids += model.encode('{"name": "')[0].tolist()
 
         generated = ""
-        while generated not in names:
-            logits = model.get_logits_from_input_ids(ids)
-            allowed_ids = set()
 
-            for tok, tok_id in vocab_dict.items():
-                candidate = generated + tok.replace("Ġ", " ")
-                for n in names:
-                    if n.startswith(candidate):
-                        allowed_ids.add(tok_id)
-                        break
-
-            for i in range(len(logits)):
-                if i not in allowed_ids:
-                    logits[i] = float("-inf")
-            token = logits.index(max(logits))
-            ids.append(token)
-            generated += id_to_token[token].replace("Ġ", " ")
+        generated = Decoding._choose(model, ids, vocab_dict,
+                                     id_to_token, names)
 
         ids += model.encode('", "parameters": {')[0].tolist()
         params = params_by_name[generated]
@@ -105,6 +125,33 @@ class Decoding(BaseModel):
                     fix += ".0"
                 if fix:
                     ids += model.encode(fix)[0].tolist()
+
+            elif spec["type"] == "string":
+                ids += model.encode('"')[0].tolist()
+                start = len(ids)
+                raw = ""
+                for _ in range(100):
+                    logits = model.get_logits_from_input_ids(ids)
+                    for i in range(len(logits)):
+                        if i not in id_to_token:
+                            logits[i] = float("-inf")
+                    token = logits.index(max(logits))
+                    raw += (id_to_token[token]
+                            .replace("Ġ", " ").replace("Ċ", "\n"))
+                    end = Decoding._find_end(raw)
+                    if end != -1:
+                        raw = raw[:end]
+                        break
+                    ids.append(token)
+                try:
+                    json.loads('"' + raw + '"')
+                except ValueError:
+                    raw = json.dumps(raw)[1:-1]
+                ids = ids[:start] + model.encode(raw + '"')[0].tolist()
+
+            elif spec["type"] == "boolean":
+                Decoding._choose(model, ids, vocab_dict,
+                                 id_to_token, ["true", "false"])
 
         ids += model.encode('}}')[0].tolist()
         return ids
